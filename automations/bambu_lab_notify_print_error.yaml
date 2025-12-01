@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://git.sr.ht/~johnhamelink/hass-json-schema/blob/main/json-schemas/blueprint-automation.json
 blueprint:
   name: "Bambu Lab - Notify on Print Error"
   source_url: "https://raw.githubusercontent.com/0rax/ha-bbla1-blueprints/refs/heads/main/automations/bambu_lab_notify_print_error.yaml"
@@ -90,6 +91,10 @@ actions:
             data:
               notification_icon: "mdi:printer-3d-nozzle-alert"
               color: "#EF5350"
+              entity_id: >-
+                {% if print_image %}
+                  {{ print_image }}
+                {% endif %}
               image: >-
                 {% if print_image %}
                   /api/{{states[print_image].domain}}_proxy/{{print_image}}

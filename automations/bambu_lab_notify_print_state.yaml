@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://git.sr.ht/~johnhamelink/hass-json-schema/blob/main/json-schemas/blueprint-automation.json
 blueprint:
   name: "Bambu Lab - Notify on Print Ending"
   source_url: "https://raw.githubusercontent.com/0rax/ha-bbla1-blueprints/refs/heads/main/automations/bambu_lab_notify_print_state.yaml"
@@ -102,6 +103,10 @@ actions:
                   #FFA726
                 {% else %}
                   #66BB6A
+                {% endif %}
+              entity_id: >-
+                {% if print_image %}
+                  {{ print_image }}
                 {% endif %}
               image: >-
                 {% if print_image %}
