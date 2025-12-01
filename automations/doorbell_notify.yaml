@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=https://git.sr.ht/~johnhamelink/hass-json-schema/blob/main/json-schemas/blueprint-automation.json
+blueprint:
+  name: "Doorbell - Notify on visitor"
+  source_url: "https://raw.githubusercontent.com/0rax/ha-blueprints/refs/heads/main/automations/doorbell_notify.yaml"
+  author: "0rax"
+  description: "Send notifications to mobile devices when a visitor is detected by a doorbell sensor."
+  domain: automation
+  input:
+    doorbell:
+      name: Doorbell
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+    image:
+      name: "Optional: Image or Camera Snapshot Entity"
+      default: ""
+      description: "An Image or Camera Entity to send a preview with to mobile-app. Leave empty if you do not want to use this."
+      selector:
+        entity:
+          filter:
+            - domain: camera
+            - domain: image
+    icon:
+      name: Notification Icon
+      description: "The icon to use for the notification."
+      default: "mdi:doorbell-video"
+      selector:
+        icon: {}
+    message:
+      name: Notification Message
+      description: "The message to send when the doorbell is pressed."
+      default: "Someone is at the door!"
+      selector:
+        text: {}
+    notify_devices_mobile:
+      name: Mobile Notify Devices
+      description: "Mobile devices to push notifications to (using the Companion App integration)."
+      default: []
+      selector:
+        device:
+          multiple: true
+          filter:
+            - integration: mobile_app
+    custom_actions:
+      name: Custom Actions
+      description: "Custom Actions to run. Please provide proper structure, devices, and service data as applicable."
+      default: []
+      selector:
+        action: {}
+
+triggers:
+  - trigger: state
+    entity_id: !input doorbell
+    from: "off"
+    to: "on"
+
+variables:
+  doorbell_sensor: !input doorbell
+  doorbell_image: !input image
+
+actions:
+  - alias: "Run custom actions"
+    choose: []
+    default: !input custom_actions
+  - alias: "Send notification to mobile devices"
+    repeat:
+      for_each: !input notify_devices_mobile
+      sequence:
+        - action: "notify.mobile_app_{{ device_attr(repeat.item, 'name') | slugify }}"
+          data:
+            title: "{{ device_attr(doorbell_sensor, 'name') }}"
+            message: !input message
+            data:
+              ttl: 0
+              priority: high
+              notification_icon: !input icon
+              entity_id: >-
+                {{ doorbell_image }}
+              image: >-
+                {% if doorbell_image %}
+                  /api/{{states[doorbell_image].domain}}_proxy/{{doorbell_image}}
+                {% endif %}
+              group: >-
+                {{ device_attr(doorbell_sensor, 'name') }}
+              # Mark notification as High Priority
