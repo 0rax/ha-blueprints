@@ -72,8 +72,7 @@ actions:
             title: "{{ device_attr(doorbell_sensor, 'name') }}"
             message: !input message
             data:
-              ttl: 0
-              priority: high
+              # Notification details
               notification_icon: !input icon
               entity_id: >-
                 {{ doorbell_image }}
@@ -83,4 +82,11 @@ actions:
                 {% endif %}
               group: >-
                 {{ device_attr(doorbell_sensor, 'name') }}
-              # Mark notification as High Priority
+              # Mark notification as high priority
+              ttl: 0
+              priority: high
+              push:
+                interruption-level: critical
+              # Create notification channel for the device
+              channel: "{{ device_attr(doorbell_sensor, 'name') }}"
+              importance: high
