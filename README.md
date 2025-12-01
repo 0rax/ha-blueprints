@@ -1,3 +1,3 @@
-# Home Assistant Bambu Lab Printer Blueprints
+# 0rax's Home Assistant Blueprints
 
-Home Assistant Automation blueprints for Bambulab Printers using the [Bambu Lab](https://github.com/greghesp/ha-bambulab) integration.
+Personal automation blueprints and dashboard collection.
