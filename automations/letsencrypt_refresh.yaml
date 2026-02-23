@@ -1,0 +1,51 @@
+blueprint:
+  name: "Let's Encrypt: Refresh Certificate"
+  source_url: "https://raw.githubusercontent.com/0rax/ha-blueprints/refs/heads/main/automations/letsencrypt_refresh.yaml"
+  author: "0rax"
+  description: >-
+    Refresh Let's Encrypt certificate before it expire by restarting the
+    Let's Encrypt app. Requires a [Certificate Expiry](https://www.home-assistant.io/integrations/cert_expiry/) sensor to retrieve expiry time.
+  domain: automation
+  input:
+    expiry_sensor:
+      name: Certificate Expiry Sensors
+      description: "Certificate Expiry sensors to check for expiry."
+      selector:
+        entity:
+          filter:
+            - integration: cert_expiry
+    days_before_expiry:
+      name: Days Before Expiry
+      description: "Number of days before certificate expires to trigger a refresh."
+      default: 15
+      selector:
+        number:
+          min: 1
+          max: 30
+          step: 1
+    trigger_time:
+      name: Trigger Time
+      description: "Time of day to check for certificate expiry and trigger refresh if needed."
+      default: "05:00:00"
+      selector:
+        time: {}
+
+triggers:
+  - at: !input trigger_time
+    trigger: time
+
+variables:
+  expiry_sensor: !input expiry_sensor
+  days_before_expiry: !input days_before_expiry
+
+conditions:
+  - condition: template
+    value_template: >
+      {% set cert = states(expiry_sensor) %}
+      {% set expiry = strptime(cert, '%Y-%m-%dT%H:%M:%S%z') %}
+      {{ expiry - now() < timedelta(days=days_before_expiry) }}
+
+actions:
+  - data:
+      addon: core_letsencrypt
+    action: hassio.addon_start
