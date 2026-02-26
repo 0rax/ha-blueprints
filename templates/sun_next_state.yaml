@@ -1,0 +1,46 @@
+blueprint:
+  name: Sun Next State
+  description: "A sensor that shows the next state of the sun (rising or setting) and its time."
+  domain: template
+  input:
+    sun_next_rising:
+      name: Sun Next Rising
+      description: "The sensor that provides the next rising time of the sun."
+      selector:
+        entity:
+          domain: sensor
+          integration: sun
+    sun_next_setting:
+      name: Sun Next Setting
+      description: "The sensor that provides the next setting time of the sun."
+      selector:
+        entity:
+          domain: sensor
+          integration: sun
+
+variables:
+  next_rising: !input sun_next_rising
+  next_setting: !input sun_next_setting
+
+sensor:
+  device_class: timestamp
+  icon: >
+    {% if states(next_rising) < states(next_setting) %}
+      mdi:weather-sunset-up
+    {% else %}
+      mdi:weather-sunset-down
+    {% endif %}
+  state: >
+    {% if states(next_rising) < states(next_setting) %}
+      {{ states(next_rising) }}
+    {% else %}
+      {{ states(next_setting) }}
+    {% endif %}
+  attributes:
+    next_state: >
+      {% if states(next_rising) < states(next_setting) %}
+        rising
+      {% else %}
+        setting
+      {% endif %}
+  availability: "{{ next_rising | has_value }}"
